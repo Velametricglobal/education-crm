@@ -10,20 +10,18 @@ import {
   Eye,
   EyeOff,
   AlertCircle,
-  HelpCircle,
   PhoneCall,
   UserPlus,
   CheckCircle2,
-  BookOpen,
-  Building2,
-  Sparkles
+  KeyRound,
+  RefreshCw
 } from 'lucide-react';
 
 export const Login = ({ onLoginSuccess }) => {
-  const { login, loginAsUser, registerStudentUser, sampleUsers } = useAuth();
+  const { login, registerStudentUser, updateUserPassword } = useAuth();
   const { settings, courses, universities, registerStudent } = useCrm();
 
-  const [activeTab, setActiveTab] = useState('login'); // 'login' | 'register'
+  const [activeTab, setActiveTab] = useState('login'); // 'login' | 'register' | 'change_password'
 
   // Login Form State
   const [email, setEmail] = useState('');
@@ -31,7 +29,16 @@ export const Login = ({ onLoginSuccess }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
-  const [showDemoCredentials, setShowDemoCredentials] = useState(false);
+
+  // Change Password Form State
+  const [pwdForm, setPwdForm] = useState({
+    email: '',
+    currentPassword: '',
+    newPassword: '',
+    confirmNewPassword: ''
+  });
+  const [pwdError, setPwdError] = useState('');
+  const [pwdSuccess, setPwdSuccess] = useState('');
 
   // Student Registration Form State
   const [regForm, setRegForm] = useState({
@@ -65,7 +72,7 @@ export const Login = ({ onLoginSuccess }) => {
       const loggedUser = await login(email, password);
 
       if (!loggedUser) {
-        setErrorMsg('Invalid email or password. Please check your credentials.');
+        setErrorMsg('Invalid email address or password.');
         setLoading(false);
         return;
       }
@@ -79,50 +86,78 @@ export const Login = ({ onLoginSuccess }) => {
 
       if (onLoginSuccess) onLoginSuccess(defaultTab);
     } catch (err) {
-      setErrorMsg(err.message || 'Authentication failed. Please verify your email address.');
+      setErrorMsg(err.message || 'Authentication failed. Please check your credentials.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Change Password Handler
+  const handleChangePasswordSubmit = async (e) => {
+    e.preventDefault();
+    setPwdError('');
+    setPwdSuccess('');
+
+    if (!pwdForm.email || !pwdForm.currentPassword || !pwdForm.newPassword) {
+      setPwdError('Please complete all required fields.');
+      return;
+    }
+
+    if (pwdForm.newPassword !== pwdForm.confirmNewPassword) {
+      setPwdError('New passwords do not match. Please re-type your new password.');
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      await updateUserPassword(pwdForm.email, pwdForm.currentPassword, pwdForm.newPassword);
+      setPwdSuccess('Password changed successfully! You can now log in with your new password.');
+      
+      // Auto switch back to login after 1.5 seconds
+      setTimeout(() => {
+        setEmail(pwdForm.email);
+        setPassword(pwdForm.newPassword);
+        setActiveTab('login');
+      }, 1500);
+    } catch (err) {
+      setPwdError(err.message || 'Failed to update password. Please check your current password.');
     } finally {
       setLoading(false);
     }
   };
 
   // Student Self-Registration Handler
-  const handleStudentRegistration = (e) => {
+  const handleStudentRegistration = async (e) => {
     e.preventDefault();
     setRegError('');
 
-    if (!regForm.name || !regForm.mobile || !regForm.email) {
+    if (!regForm.name || !regForm.mobile || !regForm.email || !regForm.password) {
       setRegError('Please complete all required fields (*)');
       return;
     }
 
-    if (regForm.password && regForm.password !== regForm.confirmPassword) {
+    if (regForm.password !== regForm.confirmPassword) {
       setRegError('Passwords do not match. Please re-type password.');
       return;
     }
 
     setLoading(true);
 
-    setTimeout(() => {
-      // 1. Create student record in CRM Database
-      const newStudentObj = registerStudent(regForm);
-
-      // 2. Authenticate student user
-      registerStudentUser(regForm.name, regForm.email, regForm.mobile);
+    try {
+      registerStudent(regForm);
+      await registerStudentUser(regForm.name, regForm.email, regForm.mobile, regForm.password);
 
       setRegSuccess(true);
       setLoading(false);
 
-      // Redirect immediately to Student Self-Service Portal
       setTimeout(() => {
         if (onLoginSuccess) onLoginSuccess('student_portal');
       }, 1000);
-    }, 800);
-  };
-
-  const handleFillDemoCreds = (demoUser) => {
-    setEmail(demoUser.email);
-    setPassword('••••••••••••');
-    setErrorMsg('');
+    } catch (err) {
+      setRegError(err.message || 'Registration failed. Please try again.');
+      setLoading(false);
+    }
   };
 
   return (
@@ -164,30 +199,39 @@ export const Login = ({ onLoginSuccess }) => {
       </div>
 
       {/* Center Auth Card */}
-      <div className="max-w-xl mx-auto w-full my-6">
+      <div className="max-w-md mx-auto w-full my-6">
         <div className="bg-slate-900/90 p-6 sm:p-8 rounded-3xl border border-slate-800 shadow-2xl space-y-6 backdrop-blur-md relative overflow-hidden">
           {/* Top Gradient Accent */}
           <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-blue-600 via-indigo-600 to-emerald-500"></div>
 
           {/* Mode Switcher Tabs */}
-          <div className="grid grid-cols-2 bg-slate-950 p-1 rounded-2xl border border-slate-800">
+          <div className="grid grid-cols-3 bg-slate-950 p-1 rounded-2xl border border-slate-800 text-[11px]">
             <button
               type="button"
               onClick={() => setActiveTab('login')}
-              className={`py-2 text-xs font-extrabold rounded-xl transition-all flex items-center justify-center gap-2 ${
+              className={`py-2 font-extrabold rounded-xl transition-all flex items-center justify-center gap-1.5 ${
                 activeTab === 'login' ? 'bg-blue-600 text-white shadow-md' : 'text-slate-400 hover:text-white'
               }`}
             >
-              <Lock className="w-4 h-4" /> Sign In
+              <Lock className="w-3.5 h-3.5" /> Sign In
             </button>
             <button
               type="button"
               onClick={() => setActiveTab('register')}
-              className={`py-2 text-xs font-extrabold rounded-xl transition-all flex items-center justify-center gap-2 ${
+              className={`py-2 font-extrabold rounded-xl transition-all flex items-center justify-center gap-1.5 ${
                 activeTab === 'register' ? 'bg-emerald-600 text-white shadow-md' : 'text-slate-400 hover:text-white'
               }`}
             >
-              <UserPlus className="w-4 h-4" /> Create Student Account
+              <UserPlus className="w-3.5 h-3.5" /> Register
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveTab('change_password')}
+              className={`py-2 font-extrabold rounded-xl transition-all flex items-center justify-center gap-1.5 ${
+                activeTab === 'change_password' ? 'bg-purple-600 text-white shadow-md' : 'text-slate-400 hover:text-white'
+              }`}
+            >
+              <KeyRound className="w-3.5 h-3.5" /> Reset Pwd
             </button>
           </div>
 
@@ -195,8 +239,8 @@ export const Login = ({ onLoginSuccess }) => {
           {activeTab === 'login' && (
             <div className="space-y-5">
               <div className="text-center space-y-1.5">
-                <h2 className="text-xl font-extrabold text-white tracking-tight">Staff & Student Login</h2>
-                <p className="text-xs text-slate-400">Enter your authorized credentials to access your portal.</p>
+                <h2 className="text-xl font-extrabold text-white tracking-tight">Authenticated Sign In</h2>
+                <p className="text-xs text-slate-400">Enter your authorized email and password to sign in.</p>
               </div>
 
               {/* Validation Error Alert */}
@@ -209,13 +253,13 @@ export const Login = ({ onLoginSuccess }) => {
 
               <form onSubmit={handleSecureLogin} className="space-y-4 text-xs">
                 <div>
-                  <label className="block font-bold text-slate-300 mb-1">Email / User ID *</label>
+                  <label className="block font-bold text-slate-300 mb-1">Email Address / User ID *</label>
                   <div className="relative">
                     <Mail className="w-4 h-4 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
                     <input
                       type="email"
                       required
-                      placeholder="name@educonsult.in"
+                      placeholder="admin@educonsult.in"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       className="w-full pl-10 pr-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white font-medium focus:outline-none focus:ring-2 focus:ring-blue-500/50"
@@ -248,14 +292,14 @@ export const Login = ({ onLoginSuccess }) => {
                 <div className="flex items-center justify-between text-[11px] text-slate-400">
                   <label className="flex items-center gap-1.5 cursor-pointer">
                     <input type="checkbox" defaultChecked className="rounded bg-slate-950 border-slate-800 accent-blue-600" />
-                    <span>Remember me</span>
+                    <span>Remember session</span>
                   </label>
                   <button
                     type="button"
-                    onClick={() => setShowDemoCredentials(!showDemoCredentials)}
-                    className="text-blue-400 hover:underline font-semibold flex items-center gap-1"
+                    onClick={() => setActiveTab('change_password')}
+                    className="text-purple-400 hover:underline font-semibold"
                   >
-                    <HelpCircle className="w-3 h-3" /> Staff Email Directory
+                    Change Password?
                   </button>
                 </div>
 
@@ -267,71 +311,92 @@ export const Login = ({ onLoginSuccess }) => {
                   {loading ? "Authenticating Credentials..." : "Sign In Securely"} <ArrowRight className="w-4 h-4" />
                 </button>
               </form>
-
-              {/* Quick Role Login Shortcut Bar */}
-              <div className="space-y-1.5 pt-1">
-                <p className="text-[11px] font-bold text-slate-400">Quick 1-Click Role Login:</p>
-                <div className="flex flex-wrap gap-1.5">
-                  <button
-                    type="button"
-                    onClick={() => { setEmail('admin@educonsult.in'); setPassword('admin123'); setErrorMsg(''); }}
-                    className="px-2.5 py-1 rounded-lg bg-blue-500/20 text-blue-300 border border-blue-500/30 text-[10px] font-extrabold hover:bg-blue-500/30 transition-colors"
-                  >
-                    👑 Super Admin
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => { setEmail('manager@educonsult.in'); setPassword('manager123'); setErrorMsg(''); }}
-                    className="px-2.5 py-1 rounded-lg bg-purple-500/20 text-purple-300 border border-purple-500/30 text-[10px] font-extrabold hover:bg-purple-500/30 transition-colors"
-                  >
-                    👔 Manager
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => { setEmail('counsellor@educonsult.in'); setPassword('counsellor123'); setErrorMsg(''); }}
-                    className="px-2.5 py-1 rounded-lg bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-[10px] font-extrabold hover:bg-emerald-500/30 transition-colors"
-                  >
-                    🎧 Counsellor
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => { setEmail('finance@educonsult.in'); setPassword('finance123'); setErrorMsg(''); }}
-                    className="px-2.5 py-1 rounded-lg bg-amber-500/20 text-amber-300 border border-amber-500/30 text-[10px] font-extrabold hover:bg-amber-500/30 transition-colors"
-                  >
-                    💳 Accountant
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => { setEmail('student@educonsult.in'); setPassword('student123'); setErrorMsg(''); }}
-                    className="px-2.5 py-1 rounded-lg bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 text-[10px] font-extrabold hover:bg-indigo-500/30 transition-colors"
-                  >
-                    🎓 Student
-                  </button>
-                </div>
-              </div>
-
-              {showDemoCredentials && (
-                <div className="p-3.5 bg-slate-950 rounded-2xl border border-slate-800 space-y-2 text-[11px]">
-                  <p className="font-extrabold text-slate-300">Authorized Directory (Click to autofill):</p>
-                  <div className="space-y-1">
-                    {sampleUsers.map(u => (
-                      <button
-                        key={u.id}
-                        type="button"
-                        onClick={() => handleFillDemoCreds(u)}
-                        className="w-full text-left p-1.5 rounded-lg hover:bg-slate-900 flex items-center justify-between text-slate-400 hover:text-white transition-colors"
-                      >
-                        <span><strong className="text-slate-200">{u.name}</strong> ({u.role})</span>
-                        <span className="text-[10px] font-mono text-blue-400">{u.email}</span>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
             </div>
           )}
 
-          {/* MODE B: CREATE STUDENT ACCOUNT FORM */}
+          {/* MODE B: CHANGE PASSWORD FORM */}
+          {activeTab === 'change_password' && (
+            <div className="space-y-4">
+              <div className="text-center space-y-1">
+                <h2 className="text-xl font-extrabold text-white tracking-tight">Change Password</h2>
+                <p className="text-xs text-slate-400">Update your account password securely.</p>
+              </div>
+
+              {pwdError && (
+                <div className="p-3 rounded-2xl bg-red-500/10 border border-red-500/30 text-red-300 text-xs flex items-start gap-2">
+                  <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+                  <span>{pwdError}</span>
+                </div>
+              )}
+
+              {pwdSuccess && (
+                <div className="p-3 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-xs flex items-start gap-2">
+                  <CheckCircle2 className="w-4 h-4 shrink-0 mt-0.5 text-emerald-400" />
+                  <span>{pwdSuccess}</span>
+                </div>
+              )}
+
+              <form onSubmit={handleChangePasswordSubmit} className="space-y-3 text-xs">
+                <div>
+                  <label className="block font-bold text-slate-300 mb-1">Account Email *</label>
+                  <input
+                    type="email"
+                    required
+                    placeholder="admin@educonsult.in"
+                    value={pwdForm.email}
+                    onChange={(e) => setPwdForm(prev => ({ ...prev, email: e.target.value }))}
+                    className="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white font-medium focus:outline-none focus:ring-2 focus:ring-purple-500/50"
+                  />
+                </div>
+
+                <div>
+                  <label className="block font-bold text-slate-300 mb-1">Current Password *</label>
+                  <input
+                    type="password"
+                    required
+                    placeholder="••••••••••••"
+                    value={pwdForm.currentPassword}
+                    onChange={(e) => setPwdForm(prev => ({ ...prev, currentPassword: e.target.value }))}
+                    className="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white font-medium focus:outline-none focus:ring-2 focus:ring-purple-500/50"
+                  />
+                </div>
+
+                <div>
+                  <label className="block font-bold text-slate-300 mb-1">New Password *</label>
+                  <input
+                    type="password"
+                    required
+                    placeholder="Enter strong new password"
+                    value={pwdForm.newPassword}
+                    onChange={(e) => setPwdForm(prev => ({ ...prev, newPassword: e.target.value }))}
+                    className="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white font-medium focus:outline-none focus:ring-2 focus:ring-purple-500/50"
+                  />
+                </div>
+
+                <div>
+                  <label className="block font-bold text-slate-300 mb-1">Confirm New Password *</label>
+                  <input
+                    type="password"
+                    required
+                    placeholder="Re-type new password"
+                    value={pwdForm.confirmNewPassword}
+                    onChange={(e) => setPwdForm(prev => ({ ...prev, confirmNewPassword: e.target.value }))}
+                    className="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white font-medium focus:outline-none focus:ring-2 focus:ring-purple-500/50"
+                  />
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="w-full py-3 bg-purple-600 hover:bg-purple-500 text-white font-extrabold text-xs sm:text-sm rounded-xl shadow-lg shadow-purple-600/30 transition-all flex items-center justify-center gap-2 active:scale-98 disabled:opacity-50 mt-2"
+                >
+                  {loading ? "Updating Password..." : "Update Password Securely"} <RefreshCw className="w-4 h-4" />
+                </button>
+              </form>
+            </div>
+          )}
+
+          {/* MODE C: CREATE STUDENT ACCOUNT FORM */}
           {activeTab === 'register' && (
             <div className="space-y-4">
               <div className="text-center space-y-1">
@@ -458,15 +523,15 @@ export const Login = ({ onLoginSuccess }) => {
             </div>
           )}
 
-          <p className="text-[10px] text-center text-slate-500">
-            🔒 100% Confidential • Official UGC-DEB Distance Admissions
+          <p className="text-[10px] text-center text-slate-500 flex items-center justify-center gap-1">
+            <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" /> Authenticated Access Only • Official UGC-DEB Portal
           </p>
         </div>
       </div>
 
       {/* Footer */}
       <div className="max-w-4xl mx-auto w-full text-center text-xs text-slate-500 pt-4 border-t border-slate-800/60">
-        <p>© 2026 {settings.agencyName}. Student Portal & Distance CRM.</p>
+        <p>© 2026 {settings.agencyName}. Authenticated Education CRM.</p>
       </div>
     </div>
   );

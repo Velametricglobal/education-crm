@@ -7,7 +7,7 @@ const AuthContext = createContext(null);
 export const AuthProvider = ({ children }) => {
   const [usersList, setUsersList] = useState(initialSampleUsers);
   const [currentUser, setCurrentUser] = useState(initialSampleUsers[0]);
-  const [isAuthenticated, setIsAuthenticated] = useState(true);
+  const [isAuthenticated, setIsAuthenticated] = useState(false); // Default to unauthenticated login requirement
 
   // Listen to active Supabase Auth session changes if configured
   useEffect(() => {
@@ -29,7 +29,7 @@ export const AuthProvider = ({ children }) => {
     };
   }, [usersList]);
 
-  // Real Email & Password Login (Supabase Auth + Local Fallback)
+  // Real Email & Password Login with Strict Password Validation
   const login = async (email, password) => {
     let authUser = null;
 
@@ -38,29 +38,78 @@ export const AuthProvider = ({ children }) => {
         const res = await supabaseService.signInWithEmail(email, password);
         authUser = res?.user;
       } catch (err) {
-        console.warn("Supabase Auth Email sign in notice (using local fallback):", err.message);
+        console.warn("Supabase Auth Email sign in notice:", err.message);
       }
     }
 
-    const foundUser = usersList.find(
+    const matchedUser = usersList.find(
       u => u.email.toLowerCase().trim() === email.toLowerCase().trim()
-    ) || (authUser ? {
+    );
+
+    if (!matchedUser && !authUser) {
+      throw new Error('No user account found matching this email address.');
+    }
+
+    // Strict Password Match Enforcement
+    if (matchedUser && matchedUser.password && matchedUser.password !== password && !authUser) {
+      throw new Error('Incorrect password. Please verify your password and try again.');
+    }
+
+    const activeUser = matchedUser || {
       id: authUser.id,
       name: authUser.user_metadata?.name || email.split('@')[0],
       email: authUser.email,
       role: authUser.user_metadata?.role || userRoles.STUDENT,
       avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150"
-    } : usersList[0]);
+    };
 
-    setCurrentUser(foundUser);
+    setCurrentUser(activeUser);
     setIsAuthenticated(true);
-    return foundUser;
+    return activeUser;
   };
 
   const loginAsUser = (userObject) => {
     setCurrentUser(userObject);
     setIsAuthenticated(true);
     return userObject;
+  };
+
+  // Change User Password Function (Enforces new password for subsequent logins)
+  const updateUserPassword = async (email, currentPassword, newPassword) => {
+    const userIndex = usersList.findIndex(
+      u => u.email.toLowerCase().trim() === email.toLowerCase().trim()
+    );
+
+    if (userIndex === -1) {
+      throw new Error('User account not found for specified email.');
+    }
+
+    const targetUser = usersList[userIndex];
+
+    if (targetUser.password && targetUser.password !== currentPassword) {
+      throw new Error('Incorrect current password. Please verify and try again.');
+    }
+
+    if (isSupabaseConfigured && supabase) {
+      try {
+        const { error } = await supabase.auth.updateUser({ password: newPassword });
+        if (error) console.warn("Supabase password update warning:", error.message);
+      } catch (err) {}
+    }
+
+    const updatedUsers = [...usersList];
+    updatedUsers[userIndex] = {
+      ...targetUser,
+      password: newPassword
+    };
+
+    setUsersList(updatedUsers);
+
+    if (currentUser?.email?.toLowerCase() === email.toLowerCase()) {
+      setCurrentUser(prev => ({ ...prev, password: newPassword }));
+    }
+
+    return true;
   };
 
   // Student self-registration user creator with Supabase Email Auth
@@ -77,6 +126,7 @@ export const AuthProvider = ({ children }) => {
       id: `USR-STU-${Math.floor(100 + Math.random() * 900)}`,
       name: name,
       email: email.toLowerCase().trim(),
+      password: password,
       role: userRoles.STUDENT,
       avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150",
       phone: phone
@@ -175,6 +225,7 @@ export const AuthProvider = ({ children }) => {
       usersList,
       login,
       loginAsUser,
+      updateUserPassword,
       registerStudentUser,
       createStaffUser,
       logout,
