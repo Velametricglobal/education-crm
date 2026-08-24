@@ -23,9 +23,39 @@ export const supabase = isSupabaseConfigured
   : null;
 
 /**
- * Supabase Relational & Storage Service Wrapper for Distance Education CRM
+ * Supabase Relational, Auth & Storage Service Wrapper for Distance Education CRM
  */
 export const supabaseService = {
+  // Real Supabase Email Authentication
+  async signInWithEmail(email, password) {
+    if (!isSupabaseConfigured || !supabase) return null;
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password
+    });
+    if (error) throw error;
+    return data;
+  },
+
+  async signUpWithEmail(email, password, userMetadata = {}) {
+    if (!isSupabaseConfigured || !supabase) return null;
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: userMetadata
+      }
+    });
+    if (error) throw error;
+    return data;
+  },
+
+  async signOutUser() {
+    if (!isSupabaseConfigured || !supabase) return null;
+    const { error } = await supabase.auth.signOut();
+    if (error) throw error;
+  },
+
   // Leads
   async fetchLeads(orgId) {
     if (!isSupabaseConfigured || !supabase) return null;

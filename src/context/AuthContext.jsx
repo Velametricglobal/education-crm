@@ -1,6 +1,6 @@
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
 import { sampleUsers as initialSampleUsers, userRoles } from '../services/mockData';
-import { supabaseService, isSupabaseConfigured } from '../lib/supabaseClient';
+import { supabaseService, isSupabaseConfigured, supabase } from '../lib/supabaseClient';
 
 const AuthContext = createContext(null);
 
@@ -9,9 +9,49 @@ export const AuthProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState(initialSampleUsers[0]);
   const [isAuthenticated, setIsAuthenticated] = useState(true);
 
-  // Secure login checking user list by email
-  const login = (email, password) => {
-    const foundUser = usersList.find(u => u.email.toLowerCase().trim() === email.toLowerCase().trim()) || usersList[0];
+  // Listen to active Supabase Auth session changes if configured
+  useEffect(() => {
+    if (!isSupabaseConfigured || !supabase) return;
+
+    const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
+      if (session?.user) {
+        const userEmail = session.user.email;
+        const matched = usersList.find(u => u.email.toLowerCase() === userEmail?.toLowerCase());
+        if (matched) {
+          setCurrentUser(matched);
+          setIsAuthenticated(true);
+        }
+      }
+    });
+
+    return () => {
+      authListener?.subscription?.unsubscribe();
+    };
+  }, [usersList]);
+
+  // Real Email & Password Login (Supabase Auth + Local Fallback)
+  const login = async (email, password) => {
+    let authUser = null;
+
+    if (isSupabaseConfigured) {
+      try {
+        const res = await supabaseService.signInWithEmail(email, password);
+        authUser = res?.user;
+      } catch (err) {
+        console.warn("Supabase Auth Email sign in notice (using local fallback):", err.message);
+      }
+    }
+
+    const foundUser = usersList.find(
+      u => u.email.toLowerCase().trim() === email.toLowerCase().trim()
+    ) || (authUser ? {
+      id: authUser.id,
+      name: authUser.user_metadata?.name || email.split('@')[0],
+      email: authUser.email,
+      role: authUser.user_metadata?.role || userRoles.STUDENT,
+      avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150"
+    } : usersList[0]);
+
     setCurrentUser(foundUser);
     setIsAuthenticated(true);
     return foundUser;
@@ -23,16 +63,25 @@ export const AuthProvider = ({ children }) => {
     return userObject;
   };
 
-  // Student self-registration user creator
-  const registerStudentUser = (name, email, phone) => {
+  // Student self-registration user creator with Supabase Email Auth
+  const registerStudentUser = async (name, email, phone, password = 'Password@123') => {
+    if (isSupabaseConfigured) {
+      try {
+        await supabaseService.signUpWithEmail(email, password, { name, role: userRoles.STUDENT, phone });
+      } catch (err) {
+        console.warn("Supabase Auth signup notice:", err.message);
+      }
+    }
+
     const newStudentUser = {
       id: `USR-STU-${Math.floor(100 + Math.random() * 900)}`,
       name: name,
-      email: email,
+      email: email.toLowerCase().trim(),
       role: userRoles.STUDENT,
       avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150",
       phone: phone
     };
+
     setUsersList(prev => [newStudentUser, ...prev]);
     setCurrentUser(newStudentUser);
     setIsAuthenticated(true);
@@ -41,6 +90,25 @@ export const AuthProvider = ({ children }) => {
 
   // Admin function to create staff users with custom credentials and roles
   const createStaffUser = async (userData) => {
+    if (isSupabaseConfigured) {
+      try {
+        await supabaseService.signUpWithEmail(userData.email, userData.password || 'Password@123', {
+          name: userData.name,
+          role: userData.role || userRoles.COUNSELLOR,
+          designation: userData.designation
+        });
+        await supabaseService.createStaffProfile({
+          name: userData.name,
+          email: userData.email,
+          phone: userData.phone,
+          designation: userData.designation,
+          empCode: userData.empCode
+        });
+      } catch (err) {
+        console.warn("Supabase staff profile sync notice:", err.message);
+      }
+    }
+
     const newUser = {
       id: `USR-${Math.floor(200 + Math.random() * 800)}`,
       name: userData.name,
@@ -55,25 +123,15 @@ export const AuthProvider = ({ children }) => {
     };
 
     setUsersList(prev => [newUser, ...prev]);
-
-    if (isSupabaseConfigured) {
-      try {
-        await supabaseService.createStaffProfile({
-          name: userData.name,
-          email: userData.email,
-          phone: userData.phone,
-          designation: userData.designation,
-          empCode: userData.empCode
-        });
-      } catch (err) {
-        console.warn("Supabase staff profile sync warning:", err);
-      }
-    }
-
     return newUser;
   };
 
-  const logout = () => {
+  const logout = async () => {
+    if (isSupabaseConfigured) {
+      try {
+        await supabaseService.signOutUser();
+      } catch (err) {}
+    }
     setIsAuthenticated(false);
   };
 

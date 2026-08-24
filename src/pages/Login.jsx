@@ -20,7 +20,7 @@ import {
 } from 'lucide-react';
 
 export const Login = ({ onLoginSuccess }) => {
-  const { loginAsUser, registerStudentUser, sampleUsers } = useAuth();
+  const { login, loginAsUser, registerStudentUser, sampleUsers } = useAuth();
   const { settings, courses, universities, registerStudent } = useCrm();
 
   const [activeTab, setActiveTab] = useState('login'); // 'login' | 'register'
@@ -49,8 +49,8 @@ export const Login = ({ onLoginSuccess }) => {
   const [regError, setRegError] = useState('');
   const [regSuccess, setRegSuccess] = useState(false);
 
-  // Secure credential authentication handler
-  const handleSecureLogin = (e) => {
+  // Secure credential authentication handler using Supabase Email Auth & Local fallback
+  const handleSecureLogin = async (e) => {
     e.preventDefault();
     setErrorMsg('');
 
@@ -61,31 +61,28 @@ export const Login = ({ onLoginSuccess }) => {
 
     setLoading(true);
 
-    setTimeout(() => {
-      // Find matching user by email
-      const matchedUser = sampleUsers.find(
-        u => u.email.toLowerCase().trim() === email.toLowerCase().trim()
-      );
+    try {
+      const loggedUser = await login(email, password);
 
-      if (!matchedUser) {
-        setErrorMsg('Invalid credentials or user account not found. Please check your email.');
+      if (!loggedUser) {
+        setErrorMsg('Invalid email or password. Please check your credentials.');
         setLoading(false);
         return;
       }
 
-      // Successful authentication
-      loginAsUser(matchedUser);
-
-      // Route to role-specific default tab
+      // Route to role-specific default workspace
       let defaultTab = 'dashboard';
-      if (matchedUser.role === 'Admin / Manager') defaultTab = 'staff_performance';
-      if (matchedUser.role === 'Counsellor / Sales Executive') defaultTab = 'my_workspace';
-      if (matchedUser.role === 'Accountant') defaultTab = 'fees';
-      if (matchedUser.role === 'Student') defaultTab = 'student_portal';
+      if (loggedUser.role === 'Admin / Manager') defaultTab = 'staff_performance';
+      if (loggedUser.role === 'Counsellor / Sales Executive') defaultTab = 'my_workspace';
+      if (loggedUser.role === 'Accountant') defaultTab = 'fees';
+      if (loggedUser.role === 'Student') defaultTab = 'student_portal';
 
       if (onLoginSuccess) onLoginSuccess(defaultTab);
+    } catch (err) {
+      setErrorMsg(err.message || 'Authentication failed. Please verify your email address.');
+    } finally {
       setLoading(false);
-    }, 700);
+    }
   };
 
   // Student Self-Registration Handler
