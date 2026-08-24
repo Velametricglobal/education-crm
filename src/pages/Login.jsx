@@ -11,17 +11,14 @@ import {
   EyeOff,
   AlertCircle,
   PhoneCall,
-  UserPlus,
-  CheckCircle2,
-  KeyRound,
-  RefreshCw
+  UserPlus
 } from 'lucide-react';
 
 export const Login = ({ onLoginSuccess }) => {
-  const { login, registerStudentUser, updateUserPassword } = useAuth();
+  const { login, registerStudentUser } = useAuth();
   const { settings, courses, universities, registerStudent } = useCrm();
 
-  const [activeTab, setActiveTab] = useState('login'); // 'login' | 'register' | 'change_password'
+  const [activeTab, setActiveTab] = useState('login'); // 'login' | 'register'
 
   // Login Form State
   const [email, setEmail] = useState('');
@@ -29,16 +26,6 @@ export const Login = ({ onLoginSuccess }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
-
-  // Change Password Form State
-  const [pwdForm, setPwdForm] = useState({
-    email: '',
-    currentPassword: '',
-    newPassword: '',
-    confirmNewPassword: ''
-  });
-  const [pwdError, setPwdError] = useState('');
-  const [pwdSuccess, setPwdSuccess] = useState('');
 
   // Student Registration Form State
   const [regForm, setRegForm] = useState({
@@ -87,41 +74,6 @@ export const Login = ({ onLoginSuccess }) => {
       if (onLoginSuccess) onLoginSuccess(defaultTab);
     } catch (err) {
       setErrorMsg(err.message || 'Authentication failed. Please check your credentials.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Change Password Handler
-  const handleChangePasswordSubmit = async (e) => {
-    e.preventDefault();
-    setPwdError('');
-    setPwdSuccess('');
-
-    if (!pwdForm.email || !pwdForm.currentPassword || !pwdForm.newPassword) {
-      setPwdError('Please complete all required fields.');
-      return;
-    }
-
-    if (pwdForm.newPassword !== pwdForm.confirmNewPassword) {
-      setPwdError('New passwords do not match. Please re-type your new password.');
-      return;
-    }
-
-    setLoading(true);
-
-    try {
-      await updateUserPassword(pwdForm.email, pwdForm.currentPassword, pwdForm.newPassword);
-      setPwdSuccess('Password changed successfully! You can now log in with your new password.');
-      
-      // Auto switch back to login after 1.5 seconds
-      setTimeout(() => {
-        setEmail(pwdForm.email);
-        setPassword(pwdForm.newPassword);
-        setActiveTab('login');
-      }, 1500);
-    } catch (err) {
-      setPwdError(err.message || 'Failed to update password. Please check your current password.');
     } finally {
       setLoading(false);
     }
@@ -205,33 +157,24 @@ export const Login = ({ onLoginSuccess }) => {
           <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-blue-600 via-indigo-600 to-emerald-500"></div>
 
           {/* Mode Switcher Tabs */}
-          <div className="grid grid-cols-3 bg-slate-950 p-1 rounded-2xl border border-slate-800 text-[11px]">
+          <div className="grid grid-cols-2 bg-slate-950 p-1 rounded-2xl border border-slate-800 text-xs">
             <button
               type="button"
               onClick={() => setActiveTab('login')}
-              className={`py-2 font-extrabold rounded-xl transition-all flex items-center justify-center gap-1.5 ${
+              className={`py-2.5 font-extrabold rounded-xl transition-all flex items-center justify-center gap-2 ${
                 activeTab === 'login' ? 'bg-blue-600 text-white shadow-md' : 'text-slate-400 hover:text-white'
               }`}
             >
-              <Lock className="w-3.5 h-3.5" /> Sign In
+              <Lock className="w-4 h-4" /> Sign In
             </button>
             <button
               type="button"
               onClick={() => setActiveTab('register')}
-              className={`py-2 font-extrabold rounded-xl transition-all flex items-center justify-center gap-1.5 ${
+              className={`py-2.5 font-extrabold rounded-xl transition-all flex items-center justify-center gap-2 ${
                 activeTab === 'register' ? 'bg-emerald-600 text-white shadow-md' : 'text-slate-400 hover:text-white'
               }`}
             >
-              <UserPlus className="w-3.5 h-3.5" /> Register
-            </button>
-            <button
-              type="button"
-              onClick={() => setActiveTab('change_password')}
-              className={`py-2 font-extrabold rounded-xl transition-all flex items-center justify-center gap-1.5 ${
-                activeTab === 'change_password' ? 'bg-purple-600 text-white shadow-md' : 'text-slate-400 hover:text-white'
-              }`}
-            >
-              <KeyRound className="w-3.5 h-3.5" /> Reset Pwd
+              <UserPlus className="w-4 h-4" /> Create Student Account
             </button>
           </div>
 
@@ -294,13 +237,6 @@ export const Login = ({ onLoginSuccess }) => {
                     <input type="checkbox" defaultChecked className="rounded bg-slate-950 border-slate-800 accent-blue-600" />
                     <span>Remember session</span>
                   </label>
-                  <button
-                    type="button"
-                    onClick={() => setActiveTab('change_password')}
-                    className="text-purple-400 hover:underline font-semibold"
-                  >
-                    Change Password?
-                  </button>
                 </div>
 
                 <button
@@ -314,89 +250,7 @@ export const Login = ({ onLoginSuccess }) => {
             </div>
           )}
 
-          {/* MODE B: CHANGE PASSWORD FORM */}
-          {activeTab === 'change_password' && (
-            <div className="space-y-4">
-              <div className="text-center space-y-1">
-                <h2 className="text-xl font-extrabold text-white tracking-tight">Change Password</h2>
-                <p className="text-xs text-slate-400">Update your account password securely.</p>
-              </div>
-
-              {pwdError && (
-                <div className="p-3 rounded-2xl bg-red-500/10 border border-red-500/30 text-red-300 text-xs flex items-start gap-2">
-                  <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
-                  <span>{pwdError}</span>
-                </div>
-              )}
-
-              {pwdSuccess && (
-                <div className="p-3 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-xs flex items-start gap-2">
-                  <CheckCircle2 className="w-4 h-4 shrink-0 mt-0.5 text-emerald-400" />
-                  <span>{pwdSuccess}</span>
-                </div>
-              )}
-
-              <form onSubmit={handleChangePasswordSubmit} className="space-y-3 text-xs">
-                <div>
-                  <label className="block font-bold text-slate-300 mb-1">Account Email *</label>
-                  <input
-                    type="email"
-                    required
-                    placeholder="admin@educonsult.in"
-                    value={pwdForm.email}
-                    onChange={(e) => setPwdForm(prev => ({ ...prev, email: e.target.value }))}
-                    className="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white font-medium focus:outline-none focus:ring-2 focus:ring-purple-500/50"
-                  />
-                </div>
-
-                <div>
-                  <label className="block font-bold text-slate-300 mb-1">Current Password *</label>
-                  <input
-                    type="password"
-                    required
-                    placeholder="••••••••••••"
-                    value={pwdForm.currentPassword}
-                    onChange={(e) => setPwdForm(prev => ({ ...prev, currentPassword: e.target.value }))}
-                    className="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white font-medium focus:outline-none focus:ring-2 focus:ring-purple-500/50"
-                  />
-                </div>
-
-                <div>
-                  <label className="block font-bold text-slate-300 mb-1">New Password *</label>
-                  <input
-                    type="password"
-                    required
-                    placeholder="Enter strong new password"
-                    value={pwdForm.newPassword}
-                    onChange={(e) => setPwdForm(prev => ({ ...prev, newPassword: e.target.value }))}
-                    className="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white font-medium focus:outline-none focus:ring-2 focus:ring-purple-500/50"
-                  />
-                </div>
-
-                <div>
-                  <label className="block font-bold text-slate-300 mb-1">Confirm New Password *</label>
-                  <input
-                    type="password"
-                    required
-                    placeholder="Re-type new password"
-                    value={pwdForm.confirmNewPassword}
-                    onChange={(e) => setPwdForm(prev => ({ ...prev, confirmNewPassword: e.target.value }))}
-                    className="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white font-medium focus:outline-none focus:ring-2 focus:ring-purple-500/50"
-                  />
-                </div>
-
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="w-full py-3 bg-purple-600 hover:bg-purple-500 text-white font-extrabold text-xs sm:text-sm rounded-xl shadow-lg shadow-purple-600/30 transition-all flex items-center justify-center gap-2 active:scale-98 disabled:opacity-50 mt-2"
-                >
-                  {loading ? "Updating Password..." : "Update Password Securely"} <RefreshCw className="w-4 h-4" />
-                </button>
-              </form>
-            </div>
-          )}
-
-          {/* MODE C: CREATE STUDENT ACCOUNT FORM */}
+          {/* MODE B: CREATE STUDENT ACCOUNT FORM */}
           {activeTab === 'register' && (
             <div className="space-y-4">
               <div className="text-center space-y-1">
