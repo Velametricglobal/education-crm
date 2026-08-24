@@ -268,6 +268,48 @@ export const Login = ({ onLoginSuccess }) => {
                 </button>
               </form>
 
+              {/* Quick Role Login Shortcut Bar */}
+              <div className="space-y-1.5 pt-1">
+                <p className="text-[11px] font-bold text-slate-400">Quick 1-Click Role Login:</p>
+                <div className="flex flex-wrap gap-1.5">
+                  <button
+                    type="button"
+                    onClick={() => { setEmail('admin@educonsult.in'); setPassword('admin123'); setErrorMsg(''); }}
+                    className="px-2.5 py-1 rounded-lg bg-blue-500/20 text-blue-300 border border-blue-500/30 text-[10px] font-extrabold hover:bg-blue-500/30 transition-colors"
+                  >
+                    👑 Super Admin
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => { setEmail('manager@educonsult.in'); setPassword('manager123'); setErrorMsg(''); }}
+                    className="px-2.5 py-1 rounded-lg bg-purple-500/20 text-purple-300 border border-purple-500/30 text-[10px] font-extrabold hover:bg-purple-500/30 transition-colors"
+                  >
+                    👔 Manager
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => { setEmail('counsellor@educonsult.in'); setPassword('counsellor123'); setErrorMsg(''); }}
+                    className="px-2.5 py-1 rounded-lg bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-[10px] font-extrabold hover:bg-emerald-500/30 transition-colors"
+                  >
+                    🎧 Counsellor
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => { setEmail('finance@educonsult.in'); setPassword('finance123'); setErrorMsg(''); }}
+                    className="px-2.5 py-1 rounded-lg bg-amber-500/20 text-amber-300 border border-amber-500/30 text-[10px] font-extrabold hover:bg-amber-500/30 transition-colors"
+                  >
+                    💳 Accountant
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => { setEmail('student@educonsult.in'); setPassword('student123'); setErrorMsg(''); }}
+                    className="px-2.5 py-1 rounded-lg bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 text-[10px] font-extrabold hover:bg-indigo-500/30 transition-colors"
+                  >
+                    🎓 Student
+                  </button>
+                </div>
+              </div>
+
               {showDemoCredentials && (
                 <div className="p-3.5 bg-slate-950 rounded-2xl border border-slate-800 space-y-2 text-[11px]">
                   <p className="font-extrabold text-slate-300">Authorized Directory (Click to autofill):</p>

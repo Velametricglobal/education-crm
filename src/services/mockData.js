@@ -30,14 +30,12 @@ export const userRoles = {
 };
 
 export const sampleUsers = [
-  { id: "USR-101", name: "Anand Sharma", email: "anand@eduveda.in", role: userRoles.SUPER_ADMIN, avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150", phone: "+91 98100 11223" },
-  { id: "USR-102", name: "Priya Verma", email: "priya@eduveda.in", role: userRoles.ADMIN_MANAGER, avatar: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150", phone: "+91 98100 22334" },
-  { id: "USR-103", name: "Amit Kumar", email: "amit@eduveda.in", role: userRoles.COUNSELLOR, avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150", phone: "+91 98100 33445" },
-  { id: "USR-104", name: "Neha Singh", email: "neha@eduveda.in", role: userRoles.COUNSELLOR, avatar: "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=150", phone: "+91 98100 44556" },
-  { id: "USR-105", name: "Rajesh Gupta", email: "rajesh@eduveda.in", role: userRoles.COUNSELLOR, avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150", phone: "+91 98100 55667" },
-  { id: "USR-106", name: "Sunita Patel", email: "sunita@eduveda.in", role: userRoles.COUNSELLOR, avatar: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150", phone: "+91 98100 66778" },
-  { id: "USR-107", name: "Ramesh Tiwari", email: "finance@eduveda.in", role: userRoles.ACCOUNTANT, avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150", phone: "+91 98100 77889" },
-  { id: "USR-108", name: "Rahul Mehra (Student)", email: "rahul.mehra@gmail.com", role: userRoles.STUDENT, avatar: "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=150", phone: "+91 98711 99001", studentId: "STD-2026-801" }
+  { id: "USR-101", name: "Super Admin", email: "admin@educonsult.in", password: "admin123", role: userRoles.SUPER_ADMIN, avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150", phone: "+91 98100 11223" },
+  { id: "USR-102", name: "Priya Verma (Manager)", email: "manager@educonsult.in", password: "manager123", role: userRoles.ADMIN_MANAGER, avatar: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150", phone: "+91 98100 22334" },
+  { id: "USR-103", name: "Amit Kumar (Counsellor)", email: "counsellor@educonsult.in", password: "counsellor123", role: userRoles.COUNSELLOR, avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150", phone: "+91 98100 33445" },
+  { id: "USR-104", name: "Neha Singh (Counsellor)", email: "neha@educonsult.in", password: "counsellor123", role: userRoles.COUNSELLOR, avatar: "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=150", phone: "+91 98100 44556" },
+  { id: "USR-107", name: "Finance Dept (Accountant)", email: "finance@educonsult.in", password: "finance123", role: userRoles.ACCOUNTANT, avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150", phone: "+91 98100 77889" },
+  { id: "USR-108", name: "Ananya Gupta (Student)", email: "student@educonsult.in", password: "student123", role: userRoles.STUDENT, avatar: "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=150", phone: "+91 98711 99001", studentId: "STD-2026-801" }
 ];
 
 export const leadStatuses = [
