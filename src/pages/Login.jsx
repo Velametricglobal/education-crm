@@ -11,39 +11,36 @@ import {
   EyeOff,
   AlertCircle,
   PhoneCall,
-  UserPlus
+  UserCheck,
+  Calculator,
+  User
 } from 'lucide-react';
 
 export const Login = ({ onLoginSuccess }) => {
-  const { login, registerStudentUser } = useAuth();
-  const { settings, courses, universities, registerStudent } = useCrm();
+  const { login } = useAuth();
+  const { settings } = useCrm();
 
-  const [activeTab, setActiveTab] = useState('login'); // 'login' | 'register'
+  // 3 Login Role Settings: 'admin' | 'accountant' | 'student'
+  const [selectedRole, setSelectedRole] = useState('admin');
 
   // Login Form State
-  const [email, setEmail] = useState('');
+  const [email, setEmail] = useState('admin@educonsult.in');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
 
-  // Student Registration Form State
-  const [regForm, setRegForm] = useState({
-    name: '',
-    mobile: '',
-    email: '',
-    password: '',
-    confirmPassword: '',
-    city: 'Delhi NCR',
-    state: 'Delhi',
-    qualification: 'Graduation (Any Stream)',
-    preferredCourse: 'Master of Business Administration (MBA)',
-    preferredUniversity: 'LPU Online'
-  });
-  const [regError, setRegError] = useState('');
-  const [regSuccess, setRegSuccess] = useState(false);
+  // Handle switching role selector
+  const handleRoleSelect = (roleKey) => {
+    setSelectedRole(roleKey);
+    setErrorMsg('');
+    if (roleKey === 'admin') setEmail('admin@educonsult.in');
+    if (roleKey === 'accountant') setEmail('finance@educonsult.in');
+    if (roleKey === 'student') setEmail('student@educonsult.in');
+    setPassword('');
+  };
 
-  // Secure credential authentication handler using Supabase Email Auth & Local fallback
+  // Secure credential authentication handler
   const handleSecureLogin = async (e) => {
     e.preventDefault();
     setErrorMsg('');
@@ -66,7 +63,7 @@ export const Login = ({ onLoginSuccess }) => {
 
       // Route to role-specific default workspace
       let defaultTab = 'dashboard';
-      if (loggedUser.role === 'Admin / Manager') defaultTab = 'staff_performance';
+      if (loggedUser.role === 'Admin / Manager' || loggedUser.role === 'Super Admin') defaultTab = 'staff_performance';
       if (loggedUser.role === 'Counsellor / Sales Executive') defaultTab = 'my_workspace';
       if (loggedUser.role === 'Accountant') defaultTab = 'fees';
       if (loggedUser.role === 'Student') defaultTab = 'student_portal';
@@ -75,39 +72,6 @@ export const Login = ({ onLoginSuccess }) => {
     } catch (err) {
       setErrorMsg(err.message || 'Authentication failed. Please check your credentials.');
     } finally {
-      setLoading(false);
-    }
-  };
-
-  // Student Self-Registration Handler
-  const handleStudentRegistration = async (e) => {
-    e.preventDefault();
-    setRegError('');
-
-    if (!regForm.name || !regForm.mobile || !regForm.email || !regForm.password) {
-      setRegError('Please complete all required fields (*)');
-      return;
-    }
-
-    if (regForm.password !== regForm.confirmPassword) {
-      setRegError('Passwords do not match. Please re-type password.');
-      return;
-    }
-
-    setLoading(true);
-
-    try {
-      registerStudent(regForm);
-      await registerStudentUser(regForm.name, regForm.email, regForm.mobile, regForm.password);
-
-      setRegSuccess(true);
-      setLoading(false);
-
-      setTimeout(() => {
-        if (onLoginSuccess) onLoginSuccess('student_portal');
-      }, 1000);
-    } catch (err) {
-      setRegError(err.message || 'Registration failed. Please try again.');
       setLoading(false);
     }
   };
@@ -156,226 +120,130 @@ export const Login = ({ onLoginSuccess }) => {
           {/* Top Gradient Accent */}
           <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-blue-600 via-indigo-600 to-emerald-500"></div>
 
-          {/* Mode Switcher Tabs */}
-          <div className="grid grid-cols-2 bg-slate-950 p-1 rounded-2xl border border-slate-800 text-xs">
+          <div className="text-center space-y-1.5">
+            <h2 className="text-xl font-extrabold text-white tracking-tight">Select Account Login</h2>
+            <p className="text-xs text-slate-400">Choose your account role and enter authorized credentials.</p>
+          </div>
+
+          {/* 3 LOGIN ROLE SELECTORS (1. Super Admin / Admin, 2. Accountant, 3. Student) */}
+          <div className="grid grid-cols-3 gap-2 bg-slate-950 p-1.5 rounded-2xl border border-slate-800 text-xs">
             <button
               type="button"
-              onClick={() => setActiveTab('login')}
-              className={`py-2.5 font-extrabold rounded-xl transition-all flex items-center justify-center gap-2 ${
-                activeTab === 'login' ? 'bg-blue-600 text-white shadow-md' : 'text-slate-400 hover:text-white'
+              onClick={() => handleRoleSelect('admin')}
+              className={`py-2.5 px-2 font-extrabold rounded-xl transition-all flex flex-col sm:flex-row items-center justify-center gap-1.5 text-center ${
+                selectedRole === 'admin'
+                  ? 'bg-blue-600 text-white shadow-md'
+                  : 'text-slate-400 hover:text-white hover:bg-slate-900'
               }`}
             >
-              <Lock className="w-4 h-4" /> Sign In
+              <UserCheck className="w-4 h-4 text-blue-300 shrink-0" />
+              <span className="text-[11px] leading-tight">Super Admin / Admin</span>
             </button>
+
             <button
               type="button"
-              onClick={() => setActiveTab('register')}
-              className={`py-2.5 font-extrabold rounded-xl transition-all flex items-center justify-center gap-2 ${
-                activeTab === 'register' ? 'bg-emerald-600 text-white shadow-md' : 'text-slate-400 hover:text-white'
+              onClick={() => handleRoleSelect('accountant')}
+              className={`py-2.5 px-2 font-extrabold rounded-xl transition-all flex flex-col sm:flex-row items-center justify-center gap-1.5 text-center ${
+                selectedRole === 'accountant'
+                  ? 'bg-amber-600 text-white shadow-md'
+                  : 'text-slate-400 hover:text-white hover:bg-slate-900'
               }`}
             >
-              <UserPlus className="w-4 h-4" /> Create Student Account
+              <Calculator className="w-4 h-4 text-amber-300 shrink-0" />
+              <span className="text-[11px] leading-tight">Accountant</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => handleRoleSelect('student')}
+              className={`py-2.5 px-2 font-extrabold rounded-xl transition-all flex flex-col sm:flex-row items-center justify-center gap-1.5 text-center ${
+                selectedRole === 'student'
+                  ? 'bg-emerald-600 text-white shadow-md'
+                  : 'text-slate-400 hover:text-white hover:bg-slate-900'
+              }`}
+            >
+              <User className="w-4 h-4 text-emerald-300 shrink-0" />
+              <span className="text-[11px] leading-tight">Student</span>
             </button>
           </div>
 
-          {/* MODE A: LOGIN FORM */}
-          {activeTab === 'login' && (
-            <div className="space-y-5">
-              <div className="text-center space-y-1.5">
-                <h2 className="text-xl font-extrabold text-white tracking-tight">Authenticated Sign In</h2>
-                <p className="text-xs text-slate-400">Enter your authorized email and password to sign in.</p>
+          {/* Validation Error Alert */}
+          {errorMsg && (
+            <div className="p-3 rounded-2xl bg-red-500/10 border border-red-500/30 text-red-300 text-xs flex items-start gap-2">
+              <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+              <span>{errorMsg}</span>
+            </div>
+          )}
+
+          <form onSubmit={handleSecureLogin} className="space-y-4 text-xs">
+            <div>
+              <label className="block font-bold text-slate-300 mb-1">
+                {selectedRole === 'admin' && 'Super Admin / Admin Email *'}
+                {selectedRole === 'accountant' && 'Accountant Email *'}
+                {selectedRole === 'student' && 'Student Registered Email *'}
+              </label>
+              <div className="relative">
+                <Mail className="w-4 h-4 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                <input
+                  type="email"
+                  required
+                  placeholder={
+                    selectedRole === 'admin'
+                      ? 'admin@educonsult.in'
+                      : selectedRole === 'accountant'
+                      ? 'finance@educonsult.in'
+                      : 'student@educonsult.in'
+                  }
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white font-medium focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                />
               </div>
+            </div>
 
-              {/* Validation Error Alert */}
-              {errorMsg && (
-                <div className="p-3 rounded-2xl bg-red-500/10 border border-red-500/30 text-red-300 text-xs flex items-start gap-2">
-                  <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
-                  <span>{errorMsg}</span>
-                </div>
-              )}
-
-              <form onSubmit={handleSecureLogin} className="space-y-4 text-xs">
-                <div>
-                  <label className="block font-bold text-slate-300 mb-1">Email Address / User ID *</label>
-                  <div className="relative">
-                    <Mail className="w-4 h-4 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
-                    <input
-                      type="email"
-                      required
-                      placeholder="admin@educonsult.in"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      className="w-full pl-10 pr-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white font-medium focus:outline-none focus:ring-2 focus:ring-blue-500/50"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block font-bold text-slate-300 mb-1">Password *</label>
-                  <div className="relative">
-                    <Lock className="w-4 h-4 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
-                    <input
-                      type={showPassword ? "text" : "password"}
-                      required
-                      placeholder="••••••••••••"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      className="w-full pl-10 pr-10 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white font-medium focus:outline-none focus:ring-2 focus:ring-blue-500/50"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300"
-                    >
-                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                    </button>
-                  </div>
-                </div>
-
-                <div className="flex items-center justify-between text-[11px] text-slate-400">
-                  <label className="flex items-center gap-1.5 cursor-pointer">
-                    <input type="checkbox" defaultChecked className="rounded bg-slate-950 border-slate-800 accent-blue-600" />
-                    <span>Remember session</span>
-                  </label>
-                </div>
-
+            <div>
+              <label className="block font-bold text-slate-300 mb-1">Password *</label>
+              <div className="relative">
+                <Lock className="w-4 h-4 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                <input
+                  type={showPassword ? "text" : "password"}
+                  required
+                  placeholder="••••••••••••"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="w-full pl-10 pr-10 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white font-medium focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                />
                 <button
-                  type="submit"
-                  disabled={loading}
-                  className="w-full py-3 bg-blue-600 hover:bg-blue-500 text-white font-extrabold text-xs sm:text-sm rounded-xl shadow-lg shadow-blue-600/30 transition-all flex items-center justify-center gap-2 active:scale-98 disabled:opacity-50"
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300"
                 >
-                  {loading ? "Authenticating Credentials..." : "Sign In Securely"} <ArrowRight className="w-4 h-4" />
+                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
-              </form>
-            </div>
-          )}
-
-          {/* MODE B: CREATE STUDENT ACCOUNT FORM */}
-          {activeTab === 'register' && (
-            <div className="space-y-4">
-              <div className="text-center space-y-1">
-                <h2 className="text-xl font-extrabold text-white tracking-tight">Create Student Account</h2>
-                <p className="text-xs text-slate-400">Register for distance education admission & student portal access.</p>
               </div>
-
-              {regError && (
-                <div className="p-3 rounded-2xl bg-red-500/10 border border-red-500/30 text-red-300 text-xs flex items-start gap-2">
-                  <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
-                  <span>{regError}</span>
-                </div>
-              )}
-
-              {regSuccess ? (
-                <div className="text-center py-6 space-y-3">
-                  <div className="w-14 h-14 bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 rounded-full flex items-center justify-center mx-auto text-2xl font-bold">
-                    ✓
-                  </div>
-                  <h3 className="text-lg font-extrabold text-white">Student Account Created!</h3>
-                  <p className="text-xs text-slate-300">Launching your Student Self-Service Portal now...</p>
-                </div>
-              ) : (
-                <form onSubmit={handleStudentRegistration} className="space-y-3 text-xs">
-                  <div>
-                    <label className="block font-bold text-slate-300 mb-1">Student Full Name *</label>
-                    <input
-                      type="text"
-                      required
-                      placeholder="e.g. Ananya Gupta"
-                      value={regForm.name}
-                      onChange={(e) => setRegForm(prev => ({ ...prev, name: e.target.value }))}
-                      className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-white font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
-                    />
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <label className="block font-bold text-slate-300 mb-1">Mobile (+91) *</label>
-                      <input
-                        type="tel"
-                        required
-                        placeholder="10-digit number"
-                        value={regForm.mobile}
-                        onChange={(e) => setRegForm(prev => ({ ...prev, mobile: e.target.value }))}
-                        className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-white font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block font-bold text-slate-300 mb-1">Email Address *</label>
-                      <input
-                        type="email"
-                        required
-                        placeholder="ananya@gmail.com"
-                        value={regForm.email}
-                        onChange={(e) => setRegForm(prev => ({ ...prev, email: e.target.value }))}
-                        className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-white font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <label className="block font-bold text-slate-300 mb-1">Create Password *</label>
-                      <input
-                        type="password"
-                        required
-                        placeholder="••••••••"
-                        value={regForm.password}
-                        onChange={(e) => setRegForm(prev => ({ ...prev, password: e.target.value }))}
-                        className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-white font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block font-bold text-slate-300 mb-1">Confirm Password *</label>
-                      <input
-                        type="password"
-                        required
-                        placeholder="••••••••"
-                        value={regForm.confirmPassword}
-                        onChange={(e) => setRegForm(prev => ({ ...prev, confirmPassword: e.target.value }))}
-                        className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-white font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
-                      />
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block font-bold text-slate-300 mb-1">Interested Distance Course *</label>
-                    <select
-                      value={regForm.preferredCourse}
-                      onChange={(e) => setRegForm(prev => ({ ...prev, preferredCourse: e.target.value }))}
-                      className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-white font-medium focus:outline-none"
-                    >
-                      {courses.map(c => (
-                        <option key={c.id} value={c.name}>{c.name} ({c.duration})</option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block font-bold text-slate-300 mb-1">Preferred University</label>
-                    <select
-                      value={regForm.preferredUniversity}
-                      onChange={(e) => setRegForm(prev => ({ ...prev, preferredUniversity: e.target.value }))}
-                      className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-white font-medium focus:outline-none"
-                    >
-                      {universities.map(u => (
-                        <option key={u.id} value={u.name}>{u.name}</option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <button
-                    type="submit"
-                    disabled={loading}
-                    className="w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-xs sm:text-sm rounded-xl shadow-lg shadow-emerald-600/30 transition-all flex items-center justify-center gap-2 active:scale-98 disabled:opacity-50 mt-2"
-                  >
-                    {loading ? "Registering Student Account..." : "Create Account & Enter Student Portal"} <ArrowRight className="w-4 h-4" />
-                  </button>
-                </form>
-              )}
             </div>
-          )}
+
+            <div className="flex items-center justify-between text-[11px] text-slate-400">
+              <label className="flex items-center gap-1.5 cursor-pointer">
+                <input type="checkbox" defaultChecked className="rounded bg-slate-950 border-slate-800 accent-blue-600" />
+                <span>Remember session</span>
+              </label>
+            </div>
+
+            <button
+              type="submit"
+              disabled={loading}
+              className={`w-full py-3 text-white font-extrabold text-xs sm:text-sm rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 active:scale-98 disabled:opacity-50 ${
+                selectedRole === 'admin'
+                  ? 'bg-blue-600 hover:bg-blue-500 shadow-blue-600/30'
+                  : selectedRole === 'accountant'
+                  ? 'bg-amber-600 hover:bg-amber-500 shadow-amber-600/30'
+                  : 'bg-emerald-600 hover:bg-emerald-500 shadow-emerald-600/30'
+              }`}
+            >
+              {loading ? "Authenticating Credentials..." : `Sign In as ${selectedRole === 'admin' ? 'Super Admin / Admin' : selectedRole === 'accountant' ? 'Accountant' : 'Student'}`} <ArrowRight className="w-4 h-4" />
+            </button>
+          </form>
 
           <p className="text-[10px] text-center text-slate-500 flex items-center justify-center gap-1">
             <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" /> Authenticated Access Only • Official UGC-DEB Portal
