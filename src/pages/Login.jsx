@@ -13,7 +13,8 @@ import {
   PhoneCall,
   UserCheck,
   Calculator,
-  User
+  User,
+  Globe
 } from 'lucide-react';
 
 export const Login = ({ onLoginSuccess, onSwitchToPublicHomepage }) => {
@@ -110,12 +111,23 @@ export const Login = ({ onLoginSuccess, onSwitchToPublicHomepage }) => {
           </div>
         </div>
 
-        <a
-          href={`tel:${settings.phone}`}
-          className="hidden sm:flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-slate-900 text-slate-300 border border-slate-800 text-xs font-bold hover:bg-slate-800 transition-colors"
-        >
-          <PhoneCall className="w-3.5 h-3.5 text-emerald-400" /> Helpline: {settings.phone}
-        </a>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={onSwitchToPublicHomepage}
+            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold shadow-md shadow-blue-500/20 transition-all active:scale-95 cursor-pointer"
+            title="Visit Public Website Homepage"
+          >
+            <Globe className="w-3.5 h-3.5" />
+            <span>Visit Website</span>
+          </button>
+          <a
+            href={`tel:${settings.phone}`}
+            className="hidden sm:flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-slate-900 text-slate-300 border border-slate-800 text-xs font-bold hover:bg-slate-800 transition-colors"
+          >
+            <PhoneCall className="w-3.5 h-3.5 text-emerald-400" /> Helpline: {settings.phone}
+          </a>
+        </div>
       </div>
 
       {/* Center Auth Card */}

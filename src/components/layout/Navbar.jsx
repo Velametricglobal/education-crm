@@ -153,13 +153,14 @@ export const Navbar = ({ onToggleSidebar, activeTab, setActiveTab, onGlobalSearc
             <span>{settings.language === 'en' ? 'English' : 'हिंदी'}</span>
           </button>
 
-          {/* Public Portal Switcher */}
+          {/* Public Website / Home Button */}
           <button
             onClick={() => setActiveTab('public_homepage')}
-            className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-blue-50 text-blue-700 hover:bg-blue-100 text-xs font-bold border border-blue-200/60 transition-colors"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold shadow-md shadow-blue-500/20 transition-all active:scale-95 cursor-pointer"
+            title="Go to Public Website Home"
           >
-            <ExternalLink className="w-3.5 h-3.5" />
-            <span>Live Website</span>
+            <Globe className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">Website Home</span>
           </button>
 
           <NotificationBell />
