@@ -45,7 +45,7 @@ export const PublicHomepage = ({ onSwitchToCrm, onSwitchToStudentPortal }) => {
     whatsapp: '',
     email: '',
     password: '',
-    city: 'Delhi NCR',
+    city: 'Dehradun',
     qualification: 'Graduation (Any Stream)',
     preferredCourse: 'Master of Business Administration (MBA)',
     preferredUniversity: 'LPU Online',

@@ -1,21 +1,21 @@
 // Central Mock Database and Initial Data State for Distance Education CRM
 
 export const initialSystemSettings = {
-  agencyName: "EduVeda Distance Learning Consultancy",
-  tagline: "India's Premier Recognized Distance & Online University Guidance Platform",
-  taglineHindi: "भारत का प्रमुख मान्यता प्राप्त दूरस्थ और ऑनलाइन विश्वविद्यालय मार्गदर्शन केंद्र",
-  logoUrl: "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=150",
-  logoWidth: 140,
-  logoHeight: 40,
-  faviconUrl: "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=32",
+  agencyName: "Era Management Institute of Technology",
+  tagline: "Era Management Institute of Technology - Excellence in Distance & Online Education (EMIT Dehradun)",
+  taglineHindi: "इरा मैनेजमेंट इंस्टीट्यूट ऑफ टेक्नोलॉजी (EMIT) - देहरादून",
+  logoUrl: "/emit-logo.jpg",
+  logoWidth: 160,
+  logoHeight: 50,
+  faviconUrl: "/emit-logo.jpg",
   phone: "+91 98765 43210",
   whatsapp: "+91 98765 43210",
-  email: "admissions@eduveda.in",
-  address: "Plot 42, Knowledge Park III, Greater Noida, Delhi NCR - 201306",
-  gstin: "07AAAAA0000A1Z5",
-  primaryColor: "#003FB1",
-  secondaryColor: "#006A61",
-  accentColor: "#059669",
+  email: "admissions@emit.edu.in",
+  address: "Era Management Institute of Technology (EMIT), Rajpur Road, Dehradun, Uttarakhand - 248001",
+  gstin: "05AAAAA0000A1Z5",
+  primaryColor: "#0A192F",
+  secondaryColor: "#1E3A8A",
+  accentColor: "#D97706",
   currentSession: "July 2026 / Jan 2027",
   language: "en", // 'en' | 'hi'
   autoAssignStrategy: "round-robin", // 'round-robin' | 'load-balance'
@@ -30,12 +30,12 @@ export const userRoles = {
 };
 
 export const sampleUsers = [
-  { id: "USR-101", name: "Super Admin", email: "admin@educonsult.in", password: "admin123", role: userRoles.SUPER_ADMIN, avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150", phone: "+91 98100 11223" },
-  { id: "USR-102", name: "Priya Verma (Manager)", email: "manager@educonsult.in", password: "manager123", role: userRoles.ADMIN_MANAGER, avatar: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150", phone: "+91 98100 22334" },
-  { id: "USR-103", name: "Amit Kumar (Counsellor)", email: "counsellor@educonsult.in", password: "counsellor123", role: userRoles.COUNSELLOR, avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150", phone: "+91 98100 33445" },
-  { id: "USR-104", name: "Neha Singh (Counsellor)", email: "neha@educonsult.in", password: "counsellor123", role: userRoles.COUNSELLOR, avatar: "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=150", phone: "+91 98100 44556" },
-  { id: "USR-107", name: "Finance Dept (Accountant)", email: "finance@educonsult.in", password: "finance123", role: userRoles.ACCOUNTANT, avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150", phone: "+91 98100 77889" },
-  { id: "USR-108", name: "Ananya Gupta (Student)", email: "student@educonsult.in", password: "student123", role: userRoles.STUDENT, avatar: "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=150", phone: "+91 98711 99001", studentId: "STD-2026-801" }
+  { id: "USR-101", name: "Super Admin", email: "admin@emit.edu.in", password: "admin123", role: userRoles.SUPER_ADMIN, avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150", phone: "+91 98100 11223" },
+  { id: "USR-102", name: "Priya Verma (Manager)", email: "manager@emit.edu.in", password: "manager123", role: userRoles.ADMIN_MANAGER, avatar: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150", phone: "+91 98100 22334" },
+  { id: "USR-103", name: "Amit Kumar (Counsellor)", email: "counsellor@emit.edu.in", password: "counsellor123", role: userRoles.COUNSELLOR, avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150", phone: "+91 98100 33445" },
+  { id: "USR-104", name: "Neha Singh (Counsellor)", email: "neha@emit.edu.in", password: "counsellor123", role: userRoles.COUNSELLOR, avatar: "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=150", phone: "+91 98100 44556" },
+  { id: "USR-107", name: "Finance Dept (Accountant)", email: "finance@emit.edu.in", password: "finance123", role: userRoles.ACCOUNTANT, avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150", phone: "+91 98100 77889" },
+  { id: "USR-108", name: "Ananya Gupta (Student)", email: "student@emit.edu.in", password: "student123", role: userRoles.STUDENT, avatar: "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=150", phone: "+91 98711 99001", studentId: "STD-2026-801" }
 ];
 
 export const leadStatuses = [

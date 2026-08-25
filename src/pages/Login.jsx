@@ -24,7 +24,7 @@ export const Login = ({ onLoginSuccess }) => {
   const [selectedRole, setSelectedRole] = useState('admin');
 
   // Login Form State
-  const [email, setEmail] = useState('admin@educonsult.in');
+  const [email, setEmail] = useState('admin@emit.edu.in');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -34,9 +34,9 @@ export const Login = ({ onLoginSuccess }) => {
   const handleRoleSelect = (roleKey) => {
     setSelectedRole(roleKey);
     setErrorMsg('');
-    if (roleKey === 'admin') setEmail('admin@educonsult.in');
-    if (roleKey === 'accountant') setEmail('finance@educonsult.in');
-    if (roleKey === 'student') setEmail('student@educonsult.in');
+    if (roleKey === 'admin') setEmail('admin@emit.edu.in');
+    if (roleKey === 'accountant') setEmail('finance@emit.edu.in');
+    if (roleKey === 'student') setEmail('student@emit.edu.in');
     setPassword('');
   };
 
@@ -189,10 +189,10 @@ export const Login = ({ onLoginSuccess }) => {
                   required
                   placeholder={
                     selectedRole === 'admin'
-                      ? 'admin@educonsult.in'
+                      ? 'admin@emit.edu.in'
                       : selectedRole === 'accountant'
-                      ? 'finance@educonsult.in'
-                      : 'student@educonsult.in'
+                      ? 'finance@emit.edu.in'
+                      : 'student@emit.edu.in'
                   }
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
