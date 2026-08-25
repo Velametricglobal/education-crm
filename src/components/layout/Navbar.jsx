@@ -33,8 +33,9 @@ export const Navbar = ({ onToggleSidebar, activeTab, setActiveTab, onGlobalSearc
           </button>
 
           <div
-            onClick={() => setActiveTab('dashboard')}
+            onClick={() => setActiveTab('public_homepage')}
             className="flex items-center gap-2.5 cursor-pointer group"
+            title="Go to Public Website Homepage"
           >
             {settings.logoUrl && !logoError ? (
               <img

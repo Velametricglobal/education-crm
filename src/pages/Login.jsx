@@ -16,7 +16,7 @@ import {
   User
 } from 'lucide-react';
 
-export const Login = ({ onLoginSuccess }) => {
+export const Login = ({ onLoginSuccess, onSwitchToPublicHomepage }) => {
   const { login } = useAuth();
   const { settings } = useCrm();
 
@@ -80,7 +80,11 @@ export const Login = ({ onLoginSuccess }) => {
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col justify-between p-4 sm:p-8 font-sans selection:bg-blue-600 selection:text-white">
       {/* Top Header */}
       <div className="max-w-4xl mx-auto w-full flex items-center justify-between py-2">
-        <div className="flex items-center gap-3">
+        <div
+          onClick={onSwitchToPublicHomepage}
+          className="flex items-center gap-3 cursor-pointer group"
+          title="Visit Public Website Homepage"
+        >
           {settings.logoUrl ? (
             <img
               src={settings.logoUrl}
@@ -89,15 +93,15 @@ export const Login = ({ onLoginSuccess }) => {
                 width: settings.logoWidth ? `${settings.logoWidth}px` : '140px',
                 height: settings.logoHeight ? `${settings.logoHeight}px` : '40px'
               }}
-              className="object-contain"
+              className="object-contain transition-transform group-hover:scale-105"
             />
           ) : (
-            <div className="w-10 h-10 rounded-2xl bg-blue-600 text-white flex items-center justify-center font-extrabold text-xl shadow-lg shadow-blue-500/30">
+            <div className="w-10 h-10 rounded-2xl bg-blue-600 text-white flex items-center justify-center font-extrabold text-xl shadow-lg shadow-blue-500/30 group-hover:scale-105 transition-transform">
               <GraduationCap className="w-6 h-6" />
             </div>
           )}
           <div>
-            <h1 className="font-extrabold text-white text-base sm:text-lg leading-tight tracking-tight">
+            <h1 className="font-extrabold text-white text-base sm:text-lg leading-tight tracking-tight group-hover:text-blue-400 transition-colors">
               {settings.agencyName}
             </h1>
             <p className="text-[11px] font-medium text-slate-400">

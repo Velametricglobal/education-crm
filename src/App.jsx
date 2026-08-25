@@ -31,12 +31,25 @@ export function AppContent() {
   const { currentUser, isAuthenticated, userRoles } = useAuth();
   const [activeTab, setActiveTab] = useState('dashboard');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [showPublicPage, setShowPublicPage] = useState(false);
+
+  // Direct public homepage view toggle
+  if (showPublicPage || activeTab === 'public_homepage') {
+    return (
+      <PublicHomepage
+        onSwitchToCrm={() => { setShowPublicPage(false); setActiveTab('dashboard'); }}
+        onSwitchToStudentPortal={() => { setShowPublicPage(false); setActiveTab('student_portal'); }}
+      />
+    );
+  }
 
   // 1. If not authenticated, show dedicated Login screen
   if (!isAuthenticated) {
     return (
       <Login
+        onSwitchToPublicHomepage={() => setShowPublicPage(true)}
         onLoginSuccess={(defaultTab) => {
+          setShowPublicPage(false);
           setActiveTab(defaultTab || 'dashboard');
         }}
       />
@@ -47,16 +60,6 @@ export function AppContent() {
   const isStudentRole = currentUser?.role === userRoles.STUDENT || currentUser?.role === 'Student';
   if (isStudentRole) {
     return <StudentPortal onBackToApp={() => {}} />;
-  }
-
-  // 3. Direct public homepage view for staff
-  if (activeTab === 'public_homepage') {
-    return (
-      <PublicHomepage
-        onSwitchToCrm={() => setActiveTab('dashboard')}
-        onSwitchToStudentPortal={() => setActiveTab('student_portal')}
-      />
-    );
   }
 
   // 4. Direct student portal view for staff preview
